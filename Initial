@@ -1,15 +1,24 @@
 #!/bin/bash
 
 clear
-echo "$(tput bold)$(tput setaf 3)"
-echo "$(tput setaf 6)"
-echo " _   _   _____  ______  _____       _____  _____ "
-echo "| | / /  |  _  | |  ___||  _  |     |  ___||_   _|"
-echo "| |/ /   | | | | | |_   | | | |     | |     | |  "
-echo "|    \   | |_| | |  _|  | | | |     | |     | |  "
-echo "| |\  \  |  _  | | |    | |_| |     | |___  _| |_ "
-echo "|_| \_/  |_| |_| |_|    |_____|     |_____||_____|"
+
+echo "$(tput bold)$(tput setaf 3)" # Sets bold and foreground color (e.g., yellow)
+echo "$(tput setaf 6)"             # Sets foreground color (e.g., cyan)
+
+
+echo " _   _    _____   ______   _____         _____  _____ "
+echo "| | / /  |  _  | |  ____| |  _  |       | ___| |_   _|"
+echo "| |/ /   | | | | | |____  | | | |       | |      | |  "
+echo "|   \    | |_| | |  ____| | | | |       | |      | |  "
+echo "| |\ \   |  _  | | |      | |_| |       | |___  _| |_ "
+echo "|_| \_/  |_| |_| |_|      |_____|       |_____||_____|"
 echo " "
+echo "      Lower Limb Exoskeleton for cerebral palsy      " 
+echo " "
+
+echo "$(tput sgr0)"
+
+# --- Dynamic System Information ---
 
 let upSeconds="$(/usr/bin/cut -d. -f1 /proc/uptime)"
 let secs=$((${upSeconds}%60))
@@ -18,16 +27,18 @@ let hours=$((${upSeconds}/3600%24))
 let days=$((${upSeconds}/86400))
 UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
 
-# get the load averages
 read one five fifteen rest < /proc/loadavg
 
-echo "$(tput sgr0)
-**`date +"%A, %e %B %Y, %r"`**
-**`uname -srmo`**
-$(tput sgr0)- Uptime.............: ${UPTIME}
-$(tput sgr0)- Memory.............: **`free | grep Mem | awk '{print $3/1024}'`** MB (Used) / **`cat /proc/meminfo | grep MemTotal | awk {'print $2/1024'}`** MB (Total)
-$(tput sgr0)- Load Averages......: ${one}, ${five}, ${fifteen} (1, 5, 15 min)
-$(tput sgr0)- Running Processes..: **`ps ax | wc -l | tr -d " "`**
-$(tput sgr0)- IP Address.........: **`hostname -I | /usr/bin/cut -d " " -f 1`**
-$(tput sgr0)"
-echo "Welcome, ${USER}!"
+echo "**`date +"%A, %e %B %Y, %r"`**"   # Current date and time
+echo "**`uname -srmo`**"                # OS Name, Release, Kernel Version, Machine, OS
+
+echo "$(tput sgr0)- Uptime.............: ${UPTIME}"
+echo "$(tput sgr0)- Memory.............: **`free | grep Mem | awk '{print $3/1024}'`** MB (Used) / **`cat /proc/meminfo | grep MemTotal | awk {'print $2/1024'}`** MB (Total)"
+echo "$(tput sgr0)- Load Averages......: ${one}, ${five}, ${fifteen} (1, 5, 15 min)"
+echo "$(tput sgr0)- Running Processes..: **`ps ax | wc -l | tr -d " "`**"
+echo "$(tput sgr0)- IP Address.........: **`hostname -I | /usr/bin/cut -d " " -f 1`**"
+echo "$(tput sgr0)- Disk Usage (Root)..: **`df -h / | awk 'NR==2 {print $5}'`**"
+
+echo "$(tput sgr0)" # Ensure colors are reset before the welcome message
+
+echo "Welcome, ${USER}! Lower Limb Exoskeleton for Cerebral Palsy"
