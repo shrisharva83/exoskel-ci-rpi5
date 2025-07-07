@@ -1,1 +1,1 @@
-# lower-limb-exoskeleton-for-cerebral-palsy-
+# exoskel ci rpi5
