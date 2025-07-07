@@ -1,0 +1,65 @@
+source .env
+INSTALL .env /tmp/.env
+
+PUMP 800M # This will use the default or the PUMP value from .env if overridden
+
+source source.Pifile
+source ssh.Pifile
+
+source users.Pifile 
+
+RUN bash -c "echo ${HOSTNAME} > /etc/hostname"
+
+RUN bash -c "sed -i 's/127.0.1.1.*/127.0.1.1\t${HOSTNAME}/g' /etc/hosts"
+
+RUN bash -c "systemctl disable userconfig 2>/dev/null || echo 'userconfig service not found, skipping'"
+RUN bash -c "systemctl enable getty@tty1"
+
+source locale.Pifile
+
+RUN apt-get update
+
+
+echo "----------------------------------------"
+echo "---------System updated-----------------"
+echo "----------------------------------------"
+
+# Ensure that network manager is installed
+RUN apt-get install network-manager -y
+
+# Install robonet for the system as root
+RUN bash -c "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/neurobionics/robonet/releases/download/0.3.2/robonet-installer.sh | sh"
+RUN bash -c "$HOME/.cargo/bin/robonet --version"
+
+# Add network definitions with robonet, using variables from .env
+RUN bash -c "$HOME/.cargo/bin/robonet add-network -m ap -n \"${AP_SSID}\" -p \"${AP_PASSWORD}\" -r 0 -i 10.0.0.200 || echo 'Failed to add AP network, continuing anyway'"
+
+# Only add home network if SSID and password are provided in .env
+RUN bash -c "if [ ! -z \"${HOMENETWORK_SSID}\" ] && [ ! -z \"${HOMENETWORK_PASSWORD}\" ]; then \
+    $HOME/.cargo/bin/robonet add-network -m wpa -n \"${HOMENETWORK_SSID}\" -p \"${HOMENETWORK_PASSWORD}\" -r 50; \
+    echo 'Home network added'; \
+  else \
+    echo 'Skipping home network configuration - credentials not provided'; \
+  fi"
+
+# Only add enterprise network if required credentials are provided in .env
+RUN bash -c "if [ ! -z \"${ENTNETWORK_SSID}\" ] && [ ! -z \"${ENTNETWORK_IDENTITY}\" ] && [ ! -z \"${ENTNETWORK_PASSWORD}\" ]; then \
+    $HOME/.cargo/bin/robonet add-network -m wpaeap -n \"${ENTNETWORK_SSID}\" -d \"${ENTNETWORK_IDENTITY}\" -p \"${ENTNETWORK_PASSWORD}\" -r ${ENTNETWORK_PRIORITY}; \
+    echo 'Enterprise network added'; \
+  else \
+    echo 'Skipping enterprise network configuration - credentials not provided'; \
+  fi"
+
+# Install robonet with email notification settings from .env
+RUN bash -c "$HOME/.cargo/bin/robonet install --email \"${EMAIL_ADDRESS}\" --smtp-server \"${SMTP_SERVER}\" --smtp-user \"${SMTP_USERNAME}\" --smtp-password \"${SMTP_PASSWORD}\""
+
+echo "----------------------------------------"
+echo "---------Robonet installed--------------"
+echo "----------------------------------------"
+
+# Install additional packages defined in packages.Pifile
+source packages.Pifile
+
+echo "----------------------------------------"
+echo "---------Packages installed-------------"
+echo "----------------------------------------"
