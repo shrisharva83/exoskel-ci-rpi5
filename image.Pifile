@@ -1,0 +1,38 @@
+# Define supported Raspberry Pi OS image URLs
+declare -A RASPBERRY_PI_IMAGES=(
+    ["raspios"]="https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz"
+    ["ubuntu"]="https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04.2-preinstalled-server-arm64+raspi.img.xz"
+)
+
+# Enable for debug output
+DEBUG=${DEBUG:-false}
+
+# Validate input
+if [[ -z "${DISTRIBUTION}" ]]; then
+    echo "Error: DISTRIBUTION variable not set. Accepted values: raspios, ubuntu." >&2
+    exit 1
+fi
+
+# Normalize key
+KEY="${DISTRIBUTION,,}"
+
+# Optional debug info
+if [[ "$DEBUG" == true ]]; then
+    echo "[DEBUG] Looking up key: $KEY" >&2
+    echo "[DEBUG] Available keys:" >&2
+    for k in "${!RASPBERRY_PI_IMAGES[@]}"; do
+        echo " - $k" >&2
+    done
+fi
+
+# Retrieve image URL
+IMAGE_URL="${RASPBERRY_PI_IMAGES[$KEY]}"
+
+# Validate image URL
+if [[ -z "$IMAGE_URL" ]]; then
+    echo "Error: No matching image URL found for distribution '${KEY}'." >&2
+    exit 1
+fi
+
+# Base image instruction
+FROM "$IMAGE_URL"
