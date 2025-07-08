@@ -1,0 +1,10 @@
+RUN bash -c "echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config.d/00-allow-pwd-auth.conf"
+
+RUN bash -c "systemctl enable ssh"
+RUN bash -c "systemctl start ssh"
+
+RUN bash -c "mkdir -p /home/${USER}/.ssh && chmod 700 /home/${USER}/.ssh"
+
+RUN bash -c "touch /var/log/ssh_access.log && chown syslog:adm /var/log/ssh_access.log"
+
+RUN bash -c "systemctl restart ssh"
